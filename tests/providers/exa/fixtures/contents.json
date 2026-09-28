@@ -1,0 +1,27 @@
+{
+  "requestId": "e492118ccdedcba5088bfc4357a8a125",
+  "results": [
+    {
+      "id": "https://arxiv.org/abs/2307.06435",
+      "title": "A Comprehensive Overview of Large Language Models",
+      "url": "https://arxiv.org/pdf/2307.06435.pdf",
+      "publishedDate": "2023-11-16T01:36:32.547Z",
+      "author": "Humza  Naveed, University of Engineering and Technology (UET), Lahore, Pakistan",
+      "text": "Abstract Large Language Models (LLMs) have recently demonstrated remarkable capabilities...",
+      "highlights": [
+        "Such requirements have limited their adoption..."
+      ],
+      "summary": "This overview paper on Large Language Models (LLMs) highlights key developments..."
+    }
+  ],
+  "statuses": [
+    {
+      "id": "https://arxiv.org/abs/2307.06435",
+      "status": "success",
+      "source": "cached"
+    }
+  ],
+  "costDollars": {
+    "total": 0.003
+  }
+}

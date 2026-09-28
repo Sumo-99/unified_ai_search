@@ -8,6 +8,7 @@ import respx
 
 from tests.fake_provider import BearerFakeProvider, FakeProvider
 from unified_ai_search.providers.base import SearchProvider
+from unified_ai_search.providers.exa import ExaProvider
 from unified_ai_search.providers.tavily import TavilyProvider
 
 
@@ -93,6 +94,45 @@ class TavilyCase(ContractCase):
         assert router.calls.last.request.headers["Authorization"] == f"Bearer {key}"
 
 
+class ExaCase(ContractCase):
+    BASE_URL = "https://api.exa.ai"
+
+    def success(self, router: respx.MockRouter, operation: str) -> None:
+        if operation == "search":
+            router.post(f"{self.BASE_URL}/search").respond(
+                200, json=_fixture("exa", "search.json")
+            )
+            return
+        body = _fixture("exa", "contents.json")
+        body["results"][0]["id"] = "https://example.com"
+        body["statuses"] = [
+            {"id": "https://example.com", "status": "success", "source": "crawled"},
+            {
+                "id": "https://bad.example",
+                "status": "error",
+                "error": {"tag": "CRAWL_NOT_FOUND", "httpStatusCode": 404},
+            },
+        ]
+        router.post(f"{self.BASE_URL}/contents").respond(200, json=body)
+
+    def failure(
+        self, router: respx.MockRouter, status: int, headers: dict[str, str]
+    ) -> None:
+        router.post(f"{self.BASE_URL}/search").respond(
+            status,
+            json={"requestId": "r", "error": "private error body", "tag": "T"},
+            headers=headers,
+        )
+
+    def timeout(self, router: respx.MockRouter) -> None:
+        router.post(f"{self.BASE_URL}/search").mock(
+            side_effect=httpx.ReadTimeout("private transport detail")
+        )
+
+    def assert_auth(self, router: respx.MockRouter, key: str) -> None:
+        assert router.calls.last.request.headers["Authorization"] == f"Bearer {key}"
+
+
 def _fixture(provider: str, name: str) -> dict[str, Any]:
     path = Path(__file__).parent.parent / "providers" / provider / "fixtures" / name
     body: dict[str, Any] = json.loads(path.read_text())
@@ -103,4 +143,5 @@ CONTRACT_CASES: dict[type[SearchProvider], ContractCase] = {
     FakeProvider: FakeCase(FakeProvider),
     BearerFakeProvider: FakeCase(BearerFakeProvider),
     TavilyProvider: TavilyCase(),
+    ExaProvider: ExaCase(),
 }

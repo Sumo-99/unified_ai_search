@@ -24,14 +24,14 @@ ReportedCost:     unit="usd", amount, exact: bool, detail: dict
 ## Usage
 - `latency_s` and `result_count` are always measured by the SDK around the HTTP call (Firecrawl extract: total wall-clock over all scrapes).
 - `request_id` comes from the body or a documented header, else `None` (Firecrawl extract: `None`, per-URL details in `extras`).
-- Headers captured, documented ones only: Exa `x-request-id` and `x-exa-queue-ms`, You.com `X-RateLimit-*`.
+- Headers captured, documented ones only: Exa `x-request-id`, `x-exa-queued` and `x-exa-queue-ms`, You.com `X-RateLimit-*`.
 
 ## Cost: always dollars
 Native units are converted with the static table in `src/unified_ai_search/pricing.py`, reference price = **pay-as-you-go**, each value carrying its source URL and collection date. Callers can override via `SearchClient(pricing=...)`. Native amounts (credits, SKU counts) always stay in `reported.detail`.
 
 | Provider | Source | `exact` |
 |---|---|---|
-| Exa | `costDollars.total` | true |
+| Exa | `costDollars.total` (documented as an estimate, not an invoice record) | false |
 | Tavily | `usage.credits` x price table | false |
 | Firecrawl search | `creditsUsed` x price table | false |
 | Firecrawl extract | 1 credit per successfully scraped page x price table | false |
