@@ -1,4 +1,5 @@
 from .enums import Provider
-from .providers.base import SearchProvider
+from .providers.base import HttpSearchProvider
 
-PROVIDER_REGISTRY: dict[Provider, type[SearchProvider]] = {}
+# Typed to the HTTP base: the client constructs strategies with its signature.
+PROVIDER_REGISTRY: dict[Provider, type[HttpSearchProvider]] = {}

@@ -23,6 +23,7 @@ from ..errors import (
 from ..logging import logger, redact
 from ..models import ExtractRequest, ExtractResponse, SearchRequest, SearchResponse
 from ..pricing import PricingTable
+from .options import ProviderOptions
 
 Operation = Literal["search", "extract"]
 _ProviderT = TypeVar("_ProviderT", bound="HttpSearchProvider")
@@ -61,6 +62,11 @@ class HttpSearchProvider(SearchProvider):
     AUTH_HEADER: ClassVar[str] = "Authorization"
     AUTH_SCHEME: ClassVar[str] = "Bearer"
     MAX_RESULTS_CAP: ClassVar[int | None] = None
+    SEARCH_OPTIONS: ClassVar[type[ProviderOptions]] = ProviderOptions
+    EXTRACT_OPTIONS: ClassVar[type[ProviderOptions]] = ProviderOptions
+    # Native kwarg names the adapter fills from normalized inputs.
+    SEARCH_NORMALIZED_NAMES: ClassVar[frozenset[str]] = frozenset()
+    EXTRACT_NORMALIZED_NAMES: ClassVar[frozenset[str]] = frozenset()
 
     def __init__(
         self,
