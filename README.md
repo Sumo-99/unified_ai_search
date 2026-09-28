@@ -19,8 +19,8 @@ You.com, Exa, Parallel, Tavily, and Firecrawl.
 |---|---|---|
 | 01_scaffold | Typed package and development tooling | Approved |
 | 02_core | Core contracts and models | Approved |
-| **03_client** | **Client orchestration** | **Current stage — awaiting human review** |
-| 04_adapters | Provider adapters | Pending |
+| 03_client | Client orchestration | Approved |
+| **04_adapters** | **Provider adapters** | **Current stage — Tavily done, awaiting human review (then Exa, Parallel, You.com, Firecrawl)** |
 | 05_hardening | Verification and public documentation | Pending |
 
 ## Install

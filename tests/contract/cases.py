@@ -1,10 +1,14 @@
+import json
 from abc import ABC, abstractmethod
+from pathlib import Path
+from typing import Any
 
 import httpx
 import respx
 
 from tests.fake_provider import BearerFakeProvider, FakeProvider
 from unified_ai_search.providers.base import SearchProvider
+from unified_ai_search.providers.tavily import TavilyProvider
 
 
 class ContractCase(ABC):
@@ -64,7 +68,39 @@ class FakeCase(ContractCase):
         )
 
 
+class TavilyCase(ContractCase):
+    BASE_URL = "https://api.tavily.com"
+
+    def success(self, router: respx.MockRouter, operation: str) -> None:
+        name = "search.json" if operation == "search" else "extract_partial.json"
+        router.post(f"{self.BASE_URL}/{operation}").respond(
+            200, json=_fixture("tavily", name)
+        )
+
+    def failure(
+        self, router: respx.MockRouter, status: int, headers: dict[str, str]
+    ) -> None:
+        router.post(f"{self.BASE_URL}/search").respond(
+            status, json={"detail": {"error": "private error body"}}, headers=headers
+        )
+
+    def timeout(self, router: respx.MockRouter) -> None:
+        router.post(f"{self.BASE_URL}/search").mock(
+            side_effect=httpx.ReadTimeout("private transport detail")
+        )
+
+    def assert_auth(self, router: respx.MockRouter, key: str) -> None:
+        assert router.calls.last.request.headers["Authorization"] == f"Bearer {key}"
+
+
+def _fixture(provider: str, name: str) -> dict[str, Any]:
+    path = Path(__file__).parent.parent / "providers" / provider / "fixtures" / name
+    body: dict[str, Any] = json.loads(path.read_text())
+    return body
+
+
 CONTRACT_CASES: dict[type[SearchProvider], ContractCase] = {
     FakeProvider: FakeCase(FakeProvider),
     BearerFakeProvider: FakeCase(BearerFakeProvider),
+    TavilyProvider: TavilyCase(),
 }

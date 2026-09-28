@@ -1,0 +1,8 @@
+{
+  "detail": {
+    "error": "All URLs failed validation.",
+    "failed_results": [
+      {"url": "not-a-url", "error": "Validation Error: Invalid URL format"}
+    ]
+  }
+}
