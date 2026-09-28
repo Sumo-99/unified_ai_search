@@ -205,6 +205,24 @@ def test_invalid_json_response(provider, respx_mock, payload):
     assert caught.value.status_code == 200
 
 
+def test_list_body_wrapped_only_when_opted_in(provider, respx_mock):
+    respx_mock.post("https://fake.test/contents").respond(200, json=[{"url": "u"}])
+    result = provider._request_json(
+        "POST", "/contents", operation="extract", json={}, list_key="results"
+    )
+    assert result.body == {"results": [{"url": "u"}]}
+    respx_mock.post("https://fake.test/contents").respond(200, json={"a": 1})
+    result = provider._request_json(
+        "POST", "/contents", operation="extract", json={}, list_key="results"
+    )
+    assert result.body == {"a": 1}
+    respx_mock.post("https://fake.test/contents").respond(200, text="null")
+    with pytest.raises(ProviderAPIError):
+        provider._request_json(
+            "POST", "/contents", operation="extract", json={}, list_key="results"
+        )
+
+
 @pytest.mark.parametrize("status", [432, 433])
 def test_tavily_specific_rate_limits(respx_mock, status):
     class TavilyFake(FakeProvider):

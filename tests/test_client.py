@@ -98,7 +98,8 @@ def test_unknown_provider_raises_value_error(register, value):
         SearchClient(value, api_key=KEY)
 
 
-def test_known_but_unregistered_provider_raises_value_error(register):
+def test_known_but_unregistered_provider_raises_value_error(register, monkeypatch):
+    monkeypatch.delitem(PROVIDER_REGISTRY, Provider.YOU, raising=False)
     with pytest.raises(ValueError, match="no registered adapter"):
         SearchClient(Provider.YOU, api_key=KEY)
 

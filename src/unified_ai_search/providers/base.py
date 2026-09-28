@@ -168,11 +168,14 @@ class HttpSearchProvider(SearchProvider):
         operation: Operation,
         json: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
+        list_key: str | None = None,
     ) -> HttpResult:
         """One HTTP call, no retries; adapters normalize the returned JSON.
 
         After normalization, call _log_response once with the public response.
         Composite operations may aggregate multiple HttpResults before logging.
+        A provider whose body is a bare JSON array passes `list_key`; the array
+        is wrapped as `{list_key: [...]}` so bodies and `raw` stay objects.
         """
         fields = sorted(set(json or {}) | set(params or {}))
         urls = (json or {}).get("urls", [])
@@ -202,6 +205,8 @@ class HttpSearchProvider(SearchProvider):
             raise status_error
         try:
             body = response.json()
+            if list_key is not None and isinstance(body, list):
+                body = {list_key: body}
             if not isinstance(body, dict):
                 raise ValueError("expected a JSON object")
         except ValueError as exc:

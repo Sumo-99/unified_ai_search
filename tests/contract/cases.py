@@ -11,6 +11,7 @@ from unified_ai_search.providers.base import SearchProvider
 from unified_ai_search.providers.exa import ExaProvider
 from unified_ai_search.providers.parallel import ParallelProvider
 from unified_ai_search.providers.tavily import TavilyProvider
+from unified_ai_search.providers.you import YouProvider
 
 
 class ContractCase(ABC):
@@ -168,6 +169,37 @@ class ParallelCase(ContractCase):
         assert router.calls.last.request.headers["x-api-key"] == key
 
 
+class YouCase(ContractCase):
+    BASE_URL = "https://ydc-index.io/v1"
+
+    def success(self, router: respx.MockRouter, operation: str) -> None:
+        if operation == "search":
+            body = _fixture("you", "search.json")
+            body["results"]["web"] = body["results"]["web"][:1]
+            router.post(f"{self.BASE_URL}/search").respond(200, json=body)
+            return
+        items = [
+            {"url": "https://example.com", "title": "Example", "markdown": "text"},
+            {"url": "https://bad.example", "markdown": None, "html": None},
+        ]
+        router.post(f"{self.BASE_URL}/contents").respond(200, json=items)
+
+    def failure(
+        self, router: respx.MockRouter, status: int, headers: dict[str, str]
+    ) -> None:
+        router.post(f"{self.BASE_URL}/search").respond(
+            status, json={"detail": "private error body"}, headers=headers
+        )
+
+    def timeout(self, router: respx.MockRouter) -> None:
+        router.post(f"{self.BASE_URL}/search").mock(
+            side_effect=httpx.ReadTimeout("private transport detail")
+        )
+
+    def assert_auth(self, router: respx.MockRouter, key: str) -> None:
+        assert router.calls.last.request.headers["X-API-Key"] == key
+
+
 def _fixture(provider: str, name: str) -> dict[str, Any]:
     path = Path(__file__).parent.parent / "providers" / provider / "fixtures" / name
     body: dict[str, Any] = json.loads(path.read_text())
@@ -180,4 +212,5 @@ CONTRACT_CASES: dict[type[SearchProvider], ContractCase] = {
     TavilyProvider: TavilyCase(),
     ExaProvider: ExaCase(),
     ParallelProvider: ParallelCase(),
+    YouProvider: YouCase(),
 }

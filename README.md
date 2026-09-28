@@ -20,7 +20,7 @@ You.com, Exa, Parallel, Tavily, and Firecrawl.
 | 01_scaffold | Typed package and development tooling | Approved |
 | 02_core | Core contracts and models | Approved |
 | 03_client | Client orchestration | Approved |
-| **04_adapters** | **Provider adapters** | **Current stage — Tavily and Exa approved; Parallel done, awaiting human review (then You.com, Firecrawl)** |
+| **04_adapters** | **Provider adapters** | **Current stage — Tavily, Exa and Parallel approved; You.com done, awaiting human review (then Firecrawl)** |
 | 05_hardening | Verification and public documentation | Pending |
 
 ## Install
