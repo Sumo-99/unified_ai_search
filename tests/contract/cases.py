@@ -9,6 +9,7 @@ import respx
 from tests.fake_provider import BearerFakeProvider, FakeProvider
 from unified_ai_search.providers.base import SearchProvider
 from unified_ai_search.providers.exa import ExaProvider
+from unified_ai_search.providers.parallel import ParallelProvider
 from unified_ai_search.providers.tavily import TavilyProvider
 
 
@@ -133,6 +134,40 @@ class ExaCase(ContractCase):
         assert router.calls.last.request.headers["Authorization"] == f"Bearer {key}"
 
 
+class ParallelCase(ContractCase):
+    BASE_URL = "https://api.parallel.ai/v1"
+
+    def success(self, router: respx.MockRouter, operation: str) -> None:
+        if operation == "search":
+            body = _fixture("parallel", "search.json")
+            body["results"] = body["results"][:1]
+            router.post(f"{self.BASE_URL}/search").respond(200, json=body)
+            return
+        body = _fixture("parallel", "extract.json")
+        body["results"][0]["url"] = "https://example.com"
+        body["errors"] = [
+            {"url": "https://bad.example", "error_type": "fetch_error"},
+        ]
+        router.post(f"{self.BASE_URL}/extract").respond(200, json=body)
+
+    def failure(
+        self, router: respx.MockRouter, status: int, headers: dict[str, str]
+    ) -> None:
+        router.post(f"{self.BASE_URL}/search").respond(
+            status,
+            json={"type": "error", "error": {"message": "private error body"}},
+            headers=headers,
+        )
+
+    def timeout(self, router: respx.MockRouter) -> None:
+        router.post(f"{self.BASE_URL}/search").mock(
+            side_effect=httpx.ReadTimeout("private transport detail")
+        )
+
+    def assert_auth(self, router: respx.MockRouter, key: str) -> None:
+        assert router.calls.last.request.headers["x-api-key"] == key
+
+
 def _fixture(provider: str, name: str) -> dict[str, Any]:
     path = Path(__file__).parent.parent / "providers" / provider / "fixtures" / name
     body: dict[str, Any] = json.loads(path.read_text())
@@ -144,4 +179,5 @@ CONTRACT_CASES: dict[type[SearchProvider], ContractCase] = {
     BearerFakeProvider: FakeCase(BearerFakeProvider),
     TavilyProvider: TavilyCase(),
     ExaProvider: ExaCase(),
+    ParallelProvider: ParallelCase(),
 }

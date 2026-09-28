@@ -1,0 +1,20 @@
+{
+  "extract_id": "extract_8a911eb27c7a4afaa20d0d9dc98d07c0",
+  "results": [
+    {
+      "url": "https://www.example.com",
+      "title": "Example Title",
+      "excerpts": ["Excerpted text ..."],
+      "full_content": "Full content ..."
+    }
+  ],
+  "errors": [
+    {
+      "url": "https://www.example.com",
+      "error_type": "fetch_error",
+      "http_status_code": 500,
+      "content": "Error fetching content from https://www.example.com"
+    }
+  ],
+  "session_id": "session_8a911eb27c7a4afaa20d0d9dc98d07c0"
+}
